@@ -6,6 +6,7 @@ extern crate image;
 use crate::paster::Paster;
 mod paster;
 
+use std::path::Path;
 use slack::RtmClient;
 use std::fs::File;
 use std::io::BufReader;
@@ -45,8 +46,15 @@ fn main() {
     // Copy minimum matching rectangle of subject into background
     for i in 0..min_width {
         for k in 0..min_height {
-            let mut pixel = background.get_pixel(i, k);
             let j_pixel = subject.get_pixel(i, k);
+
+            // TODO: Hack around not being able to save alpha channel data
+            // TODO: For now, don't copy pixels that are supposed to be transparent
+            if j_pixel.data[3] == 0 {
+                continue;
+            }
+            println!("{:?}", j_pixel);
+
             background.put_pixel(i, k, j_pixel);
         }
     }
