@@ -1,0 +1,11 @@
+[package]
+name = "image-paster"
+version = "0.1.0"
+authors = ["malcolm"]
+edition = "2018"
+
+[dependencies]
+slack = "0.22.0"
+rand = "0.6.5"
+serde_json = "1.0.39"
+image = "0.21.1"
