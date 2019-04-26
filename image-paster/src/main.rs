@@ -2,6 +2,8 @@ extern crate slack;
 extern crate rand;
 extern crate serde_json;
 extern crate image;
+extern crate reqwest;
+
 
 use crate::paster::Paster;
 mod paster;
@@ -15,6 +17,9 @@ use image::{
     ImageFormat,
     imageops::*
 };
+use std::collections::HashMap;
+use std::io;
+
 
 fn main() {
     println!("Reading subject image");
@@ -24,12 +29,38 @@ fn main() {
     let (j_width, j_height) = subject.dimensions();
     println!("Subject is {:?} x {:?}", j_width, j_height);
 
+    // TODO: Read image from internet
+    let background_noun = "cloud";
+    
+    // TODO: Make request from splash api
+    let client = reqwest::Client::new();
+    let mut res = client
+        .get("https://api.unsplash.com/search/photos?query=\"clouds\"")
+        .header("Authorization", "Client-ID ")
+        .send().unwrap();
+
+    let v: serde_json::Value = serde_json::from_str(&res.text().unwrap()).unwrap();
+    let matching_image = &v["results"][0]["links"]["download"];
+    println!("Matching img: {:?}", matching_image);
+
+    let img = reqwest::get(matching_image)
+        .unwrap()
+        .text()
+        .unwrap();
+
+    // TODO: Save image, formatting, etc.
+
+
+    // println!("{:?}", res.json());
+
     println!("Reading background image");
     let f2 = File::open("/home/malcolm/projects/image-paster/clouds.png").expect("Couldn't load cloud image");
     let mut reader2 = BufReader::new(f2);
     let mut background = image::load(reader2, ImageFormat::PNG).unwrap();
     let (width, height) = background.dimensions();
     println!("Background is {:?} x {:?}", width, height);
+
+    // TODO: Resize subject randomly within a range
 
     let mut min_width = j_width;
     if width < j_width {
@@ -53,7 +84,7 @@ fn main() {
             if j_pixel.data[3] == 0 {
                 continue;
             }
-            println!("{:?}", j_pixel);
+            // println!("{:?}", j_pixel);
 
             background.put_pixel(i, k, j_pixel);
         }
