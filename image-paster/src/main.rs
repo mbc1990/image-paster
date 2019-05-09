@@ -1,3 +1,6 @@
+use std::fs::*;
+use std::io::prelude::*;
+
 extern crate slack;
 extern crate rand;
 extern crate serde_json;
@@ -10,7 +13,6 @@ mod paster;
 
 use std::path::Path;
 use slack::RtmClient;
-use std::fs::File;
 use std::io::BufReader;
 use image::{GenericImage, ImageBuffer, RgbImage, GenericImageView};
 use image::{
@@ -19,6 +21,7 @@ use image::{
 };
 use std::collections::HashMap;
 use std::io;
+use reqwest::Response;
 
 
 fn main() {
@@ -29,13 +32,13 @@ fn main() {
     let (j_width, j_height) = subject.dimensions();
     println!("Subject is {:?} x {:?}", j_width, j_height);
 
-    // TODO: Read image from internet
+    // TODO: Read image from slack
     let background_noun = "cloud";
     
-    // TODO: Make request from splash api
+    // Make request from splash api
     let client = reqwest::Client::new();
     let mut res = client
-        .get("https://api.unsplash.com/search/photos?query=\"clouds\"")
+        .get("https://api.unsplash.com/search/photos?query=\"moon\"")
         .header("Authorization", "Client-ID ")
         .send().unwrap();
 
@@ -43,20 +46,21 @@ fn main() {
     let matching_image = &v["results"][0]["links"]["download"];
     println!("Matching img: {:?}", matching_image);
 
-    let img = reqwest::get(matching_image)
-        .unwrap()
-        .text()
-        .unwrap();
+    let mut res2: Response = client
+        .get(matching_image.as_str().unwrap())
+        .header("Authorization", "Client-ID ")
+        .send().unwrap();
 
-    // TODO: Save image, formatting, etc.
-
-
-    // println!("{:?}", res.json());
-
+    // Works! - Write downloaded image to file
+    let mut f = File::create("/tmp/dl.jpg").expect("Unable to create file");
+    res2.copy_to(&mut f).unwrap();
+    // end works
+    println!("RES2: {:?}", res2);
     println!("Reading background image");
-    let f2 = File::open("/home/malcolm/projects/image-paster/clouds.png").expect("Couldn't load cloud image");
+    // Downloaded image
+    let f2 = File::open("/tmp/dl.jpg").expect("Couldn't load tmp image");
     let mut reader2 = BufReader::new(f2);
-    let mut background = image::load(reader2, ImageFormat::PNG).unwrap();
+    let mut background = image::load(reader2, ImageFormat::JPEG).unwrap();
     let (width, height) = background.dimensions();
     println!("Background is {:?} x {:?}", width, height);
 
