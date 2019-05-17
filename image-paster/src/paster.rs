@@ -15,9 +15,10 @@ pub struct Paster {
 }
 
 impl Paster {
-    pub fn new(namespace: &String) -> Paster {
+    pub fn new() -> Paster {
         return Paster{};
     }
+
 }
 
 
@@ -27,7 +28,20 @@ impl slack::EventHandler for Paster {
         match event {
             Event::Message(msg) => {
                 match *msg {
-                    Message::Standard(msg) => {},
+                    Message::Standard(msg) => {
+                        println!("msg: {:?}", msg);
+                        let text = msg.text.unwrap();
+                        println!("text: {:?}", text);
+                        if text.contains("<@UJLHVFB6J>") {
+                            println!("Mentioned");
+                            // TODO: This will panic if you only @<botid> with no query
+                            let query_start = text.find(" ").expect("Couldn't parse bot query");
+                            let query = &text[query_start+1..text.len()];
+
+                            // TODO: Call the image manipulation logic
+                            println!("Query: {:?}", query);
+                        }
+                    },
                     _ => {}
                 }
             },
@@ -39,6 +53,6 @@ impl slack::EventHandler for Paster {
     }
 
     fn on_connect(&mut self, cli: &RtmClient) {
-        println!("Shamebot connected");
+        println!("Paster connected");
     }
 }
