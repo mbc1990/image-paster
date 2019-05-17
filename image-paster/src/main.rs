@@ -1,3 +1,5 @@
+mod s_paster;
+
 use std::fs::*;
 use std::io::prelude::*;
 
@@ -8,8 +10,8 @@ extern crate image;
 extern crate reqwest;
 
 
-use crate::paster::Paster;
-mod paster;
+use s_paster::paster::Paster;
+//use s_paster::image_manager::ImageManager;
 
 use std::path::Path;
 use slack::RtmClient;
@@ -25,6 +27,8 @@ use reqwest::Response;
 
 
 fn main() {
+    // TODO: Extract parameters and move logic to separate api
+    /*
     println!("Reading subject image");
     let f = File::open("/home/malcolm/projects/image-paster/subject.png").expect("Couldn't load subject image");
     let mut reader = BufReader::new(f);
@@ -33,13 +37,13 @@ fn main() {
     println!("Subject is {:?} x {:?}", j_width, j_height);
 
     // TODO: Read image from slack
-    let background_noun = "cloud";
+    // let background_noun = "mars";
     
     // Make request from splash api
     let client = reqwest::Client::new();
     let mut res = client
-        .get("https://api.unsplash.com/search/photos?query=\"moon\"")
-        .header("Authorization", "Client-ID ")
+        .get("https://api.unsplash.com/search/photos?query=\"nebraska\"")
+        .header("Authorization", "Client-ID 4fd751aa38ebcb1b303fb0b8be57f8dd643cd3bc440a6608199ba150d0e90d4d")
         .send().unwrap();
 
     let v: serde_json::Value = serde_json::from_str(&res.text().unwrap()).unwrap();
@@ -48,7 +52,7 @@ fn main() {
 
     let mut res2: Response = client
         .get(matching_image.as_str().unwrap())
-        .header("Authorization", "Client-ID ")
+        .header("Authorization", "Client-ID 4fd751aa38ebcb1b303fb0b8be57f8dd643cd3bc440a6608199ba150d0e90d4d")
         .send().unwrap();
 
     // Works! - Write downloaded image to file
@@ -95,17 +99,16 @@ fn main() {
     }
 
     background.save("output.png");
+    */
 
-
-    /*
-    // TODO: Slack integration
     let args: Vec<String> = std::env::args().collect();
-    let api_key = args[1].clone();
-    let mut handler = Paster::new(&namespace);
+    // let api_key = args[1].clone();
+    let api_key = "xoxb-472934603414-632607521222-Wb20uw2JyYtrEbZYdyxnLKqk";
+    let mut handler = Paster::new();
     let r = RtmClient::login_and_run(&api_key, &mut handler);
     match r {
         Ok(_) => {}
         Err(err) => panic!("Error: {}", err),
     }
-    */
+
 }

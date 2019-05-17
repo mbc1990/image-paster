@@ -10,15 +10,19 @@ use std::io::BufReader;
 use std::time::{SystemTime, UNIX_EPOCH};
 use rand::prelude::SliceRandom;
 
-pub struct Paster {
 
+use super::image_manager::ImageManager;
+
+pub struct Paster {
+    im: ImageManager
 }
 
 impl Paster {
     pub fn new() -> Paster {
-        return Paster{};
+        return Paster {
+            im: ImageManager::new("/home/malcolm/projects/image-paster/subject.png".to_string())
+        };
     }
-
 }
 
 
