@@ -18,7 +18,7 @@ pub struct Paster {
 }
 
 impl Paster {
-    pub fn new() -> Paster {
+    pub fn new(splash_api_key: String) -> Paster {
         return Paster {
             im: ImageManager::new("/home/malcolm/projects/image-paster/subject.png".to_string())
         };

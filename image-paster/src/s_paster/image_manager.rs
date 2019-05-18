@@ -13,6 +13,7 @@ pub struct ImageManager {
 }
 
 impl ImageManager {
+
     pub fn new(fname: String) -> ImageManager {
         println!("Reading subject image");
         let f = File::open("/home/malcolm/projects/image-paster/subject.png").expect("Couldn't load subject image");
@@ -20,10 +21,15 @@ impl ImageManager {
         let subject = image::load(reader, ImageFormat::PNG).unwrap();
         let (j_width, j_height) = subject.dimensions();
         println!("Subject is {:?} x {:?}", j_width, j_height);
-        return ImageManager{
+        return ImageManager {
             subject_width: j_width,
             subject_height: j_height,
             subject: subject
         };
+    }
+
+    // TODO: This should return an enum that's a sum of all possible image error types, implementing From for each possible error
+    pub fn combine(&self, background_img_path: String) -> String {
+        return String::new();
     }
 }
