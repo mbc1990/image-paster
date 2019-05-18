@@ -12,15 +12,18 @@ use rand::prelude::SliceRandom;
 
 
 use super::image_manager::ImageManager;
+use super::splash_client::SplashClient;
 
 pub struct Paster {
-    im: ImageManager
+    im: ImageManager,
+    sc: SplashClient
 }
 
 impl Paster {
     pub fn new(splash_api_key: String) -> Paster {
         return Paster {
-            im: ImageManager::new("/home/malcolm/projects/image-paster/subject.png".to_string())
+            im: ImageManager::new("/home/malcolm/projects/image-paster/subject.png".to_string()),
+            sc: SplashClient::new(splash_api_key)
         };
     }
 }
