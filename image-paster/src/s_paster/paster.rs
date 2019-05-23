@@ -51,6 +51,8 @@ impl slack::EventHandler for Paster {
                             self.im.combine("/tmp/dl.jpg".to_string());
                             let channel = msg.channel.unwrap();
 
+                            // TODO: Upload image somewhere shareable, or move to directory that serves static files (nginx?)
+
 
                             let _ = cli.sender().send_message(&channel, "Done");
 
