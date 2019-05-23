@@ -45,7 +45,11 @@ impl slack::EventHandler for Paster {
                             let query_start = text.find(" ").expect("Couldn't parse bot query");
                             let query = &text[query_start+1..text.len()];
                             println!("Query: {:?}", &query);
+
+                            // Application logic
                             self.sc.download_background(query.to_string());
+                            self.im.combine("/tmp/dl.jpg".to_string());
+
                             // TODO: Call the image manipulation logic
 
                         }

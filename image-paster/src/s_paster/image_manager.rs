@@ -30,6 +30,43 @@ impl ImageManager {
 
     // TODO: This should return an enum that's a sum of all possible image error types, implementing From for each possible error
     pub fn combine(&self, background_img_path: String) -> String {
+        let f2 = File::open("/tmp/dl.jpg").expect("Couldn't load tmp image");
+        let mut reader2 = BufReader::new(f2);
+        let mut background = image::load(reader2, ImageFormat::JPEG).unwrap();
+        let (width, height) = background.dimensions();
+        println!("Background is {:?} x {:?}", width, height);
+
+        // TODO: Resize subject randomly within a range
+
+        let mut min_width = self.subject_width;
+        if width < self.subject_width {
+            min_width = width;
+        }
+
+        let mut min_height = self.subject_height;
+        if height < self.subject_height {
+            min_height = height;
+        }
+
+        println!("min dims is {:?} x {:?}", min_width, min_height);
+
+        // Copy minimum matching rectangle of subject into background
+        for i in 0..min_width {
+            for k in 0..min_height {
+                let j_pixel = self.subject.get_pixel(i, k);
+
+                // TODO: Hack around not being able to save alpha channel data
+                // TODO: For now, don't copy pixels that are supposed to be transparent
+                if j_pixel.data[3] == 0 {
+                    continue;
+                }
+                // println!("{:?}", j_pixel);
+
+                background.put_pixel(i, k, j_pixel);
+            }
+        }
+
+        background.save("/tmp/output.png");
         return String::new();
     }
 }
