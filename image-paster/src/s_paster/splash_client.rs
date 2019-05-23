@@ -43,7 +43,7 @@ impl SplashClient {
             .header("Authorization", authorization.as_str()) // TODO: Needs api key
             .send().unwrap();
 
-        // Works! - Write downloaded image to file
+        // Write downloaded image to file
         // TODO: Should generate a unique name so we can store backgrounds
         let mut f = File::create("/tmp/dl.jpg").expect("Unable to create file");
         res2.copy_to(&mut f).unwrap();
