@@ -46,9 +46,13 @@ impl slack::EventHandler for Paster {
                             let query = &text[query_start+1..text.len()];
                             println!("Query: {:?}", &query);
 
-                            // Application logic
+                            // Do the bot thing
                             self.sc.download_background(query.to_string());
                             self.im.combine("/tmp/dl.jpg".to_string());
+                            let channel = msg.channel.unwrap();
+
+
+                            let _ = cli.sender().send_message(&channel, "Done");
 
                             // TODO: Call the image manipulation logic
 
