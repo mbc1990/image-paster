@@ -42,17 +42,22 @@ impl slack::EventHandler for Paster {
                         println!("text: {:?}", text);
                         if text.contains("<@UJLHVFB6J>") {
                             println!("Mentioned");
-                            // TODO: This will panic if you only @<botid> with no query
-                            let query_start = text.find(" ").expect("Couldn't parse bot query");
-                            let query = &text[query_start+1..text.len()];
-                            println!("Query: {:?}", &query);
+                            let query_start = text.find(" ");
+                            match query_start {
+                                Some(q_string) => {
+                                    let query = &text[q_string+1..text.len()];
+                                    println!("Query: {:?}", &query);
 
-                            // Do the bot thing
-                            self.sc.download_background(query.to_string());
-                            let public_url = self.im.combine("/tmp/dl.jpg".to_string());
+                                    // Do the bot thing
+                                    self.sc.download_background(query.to_string());
+                                    let public_url = self.im.combine("/tmp/dl.jpg".to_string());
 
-                            let channel = msg.channel.unwrap();
-                            let _ = cli.sender().send_message(&channel, &public_url);
+                                    let channel = msg.channel.unwrap();
+                                    let _ = cli.sender().send_message(&channel, &public_url);
+
+                                },
+                                _ =>{}
+                            }
                         }
                     },
                     _ => {}
