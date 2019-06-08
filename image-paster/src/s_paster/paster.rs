@@ -38,6 +38,7 @@ impl slack::EventHandler for Paster {
                     Message::Standard(msg) => {
                         println!("msg: {:?}", msg);
                         let text = msg.text.unwrap();
+
                         println!("text: {:?}", text);
                         if text.contains("<@UJLHVFB6J>") {
                             println!("Mentioned");
@@ -48,16 +49,10 @@ impl slack::EventHandler for Paster {
 
                             // Do the bot thing
                             self.sc.download_background(query.to_string());
-                            self.im.combine("/tmp/dl.jpg".to_string());
+                            let public_url = self.im.combine("/tmp/dl.jpg".to_string());
+
                             let channel = msg.channel.unwrap();
-
-                            // TODO: Upload image somewhere shareable, or move to directory that serves static files (nginx?)
-
-
-                            let _ = cli.sender().send_message(&channel, "Done");
-
-                            // TODO: Call the image manipulation logic
-
+                            let _ = cli.sender().send_message(&channel, &public_url);
                         }
                     },
                     _ => {}

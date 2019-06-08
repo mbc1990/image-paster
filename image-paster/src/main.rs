@@ -8,6 +8,7 @@ extern crate rand;
 extern crate serde_json;
 extern crate image;
 extern crate reqwest;
+extern crate s3;
 
 
 use s_paster::paster::Paster;

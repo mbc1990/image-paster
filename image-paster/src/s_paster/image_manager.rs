@@ -1,10 +1,15 @@
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Read};
 use image::{GenericImage, ImageBuffer, RgbImage, GenericImageView};
 use image::{
     ImageFormat,
     imageops::*
 };
+use s3::credentials::Credentials;
+use s3::bucket::Bucket;
+use rand::{Rng, thread_rng};
+use rand::distributions::Alphanumeric;
+use core::iter;
 
 pub struct ImageManager {
     subject_width: u32,
@@ -37,7 +42,6 @@ impl ImageManager {
         println!("Background is {:?} x {:?}", width, height);
 
         // TODO: Resize subject randomly within a range
-
         let mut min_width = self.subject_width;
         if width < self.subject_width {
             min_width = width;
@@ -66,7 +70,33 @@ impl ImageManager {
             }
         }
 
-        background.save("/tmp/output.png");
-        return String::new();
+        // Resize to reasonable dimensions
+        let resized = background.resize(800, 600, FilterType::Nearest);
+
+        resized.save("/tmp/output.png");
+
+        let credentials = Credentials::default();
+        let region = s3::region::Region::UsEast1;
+        let bucket = Bucket::new("image-paster", region, credentials).unwrap();
+        let mut to_upload = File::open("/tmp/output.png").unwrap();
+
+        let mut data = Vec::new();
+        to_upload.read_to_end(&mut data).expect("Unable to read data");
+
+        let mut rng = thread_rng();
+        let mut s3_name: String = iter::repeat(())
+            .map(|()| rng.sample(Alphanumeric))
+            .take(25)
+            .collect();
+
+        s3_name.push_str(".png");
+
+        let (res, code) = bucket.put_object(&s3_name, &data, "multipart/form-data").unwrap();
+        println!("Code: {:?}", code);
+        println!("res: {:?}", res);
+
+        let mut public_url = "https://image-paster.s3.amazonaws.com/".to_string();
+        public_url.push_str(&s3_name);
+        return public_url;
     }
 }
