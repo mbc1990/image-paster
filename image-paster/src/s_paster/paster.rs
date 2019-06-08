@@ -20,9 +20,9 @@ pub struct Paster {
 }
 
 impl Paster {
-    pub fn new(splash_api_key: String) -> Paster {
+    pub fn new(splash_api_key: String, subject_path: String) -> Paster {
         return Paster {
-            im: ImageManager::new("/home/malcolm/projects/image-paster/subject.png".to_string()),
+            im: ImageManager::new(subject_path),
             sc: SplashClient::new(splash_api_key)
         };
     }

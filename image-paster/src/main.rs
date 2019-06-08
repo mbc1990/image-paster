@@ -30,7 +30,8 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     let slack_api_key = args[1].clone();
     let splash_api_key = args[2].clone();
-    let mut handler = Paster::new(splash_api_key);
+    let subject_path= args[3].clone();
+    let mut handler = Paster::new(splash_api_key, subject_path);
     let r = RtmClient::login_and_run(&slack_api_key, &mut handler);
     match r {
         Ok(_) => {}
