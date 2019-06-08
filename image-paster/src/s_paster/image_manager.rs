@@ -21,7 +21,7 @@ impl ImageManager {
 
     pub fn new(fname: String) -> ImageManager {
         println!("Reading subject image");
-        let f = File::open("/home/malcolm/projects/image-paster/subject.png").expect("Couldn't load subject image");
+        let f = File::open(fname).expect("Couldn't load subject image");
         let mut reader = BufReader::new(f);
         let subject = image::load(reader, ImageFormat::PNG).unwrap();
         let (j_width, j_height) = subject.dimensions();
