@@ -41,6 +41,9 @@ impl ImageManager {
         let (width, height) = background.dimensions();
         println!("Background is {:?} x {:?}", width, height);
 
+        let width_start = width / 3 - self.subject_width/2;
+        let height_start = height / 2 - self.subject_height/2;
+
         // TODO: Resize subject randomly within a range
         let mut min_width = self.subject_width;
         if width < self.subject_width {
@@ -53,6 +56,7 @@ impl ImageManager {
         }
 
         println!("min dims is {:?} x {:?}", min_width, min_height);
+        println!("Width start {:?}", width_start);
 
         // Copy minimum matching rectangle of subject into background
         for i in 0..min_width {
@@ -66,7 +70,7 @@ impl ImageManager {
                 }
                 // println!("{:?}", j_pixel);
 
-                background.put_pixel(i, k, j_pixel);
+                background.put_pixel(i + width_start, k + height_start, j_pixel);
             }
         }
 
