@@ -40,7 +40,8 @@ impl slack::EventHandler for Paster {
                         let text = msg.text.unwrap();
 
                         println!("text: {:?}", text);
-                        if text.contains("<@UJLHVFB6J>") {
+                        //if text.contains("<@UJLHVFB6J>") {  // Testing
+                        if text.contains("<@UK1VC3CV8>") {  // Zika
                             println!("Mentioned");
                             let query_start = text.find(" ");
                             match query_start {
@@ -49,12 +50,18 @@ impl slack::EventHandler for Paster {
                                     println!("Query: {:?}", &query);
 
                                     // Do the bot thing
-                                    self.sc.download_background(query.to_string());
-                                    let public_url = self.im.combine("/tmp/dl.jpg".to_string());
-
-                                    let channel = msg.channel.unwrap();
-                                    let _ = cli.sender().send_message(&channel, &public_url);
-
+                                    let success = self.sc.download_background(query.to_string());
+                                    match success {
+                                        Some(_) => {
+                                            let public_url = self.im.combine("/tmp/dl.jpg".to_string());
+                                            let channel = msg.channel.unwrap();
+                                            let _ = cli.sender().send_message(&channel, &public_url);
+                                        },
+                                        _ => {
+                                            let channel = msg.channel.unwrap();
+                                            let _ = cli.sender().send_message(&channel, "Could not find image");
+                                        }
+                                    }
                                 },
                                 _ =>{}
                             }

@@ -23,7 +23,7 @@ impl SplashClient {
     }
 
     // TODO: Should return a result type
-    pub fn download_background(&self, query: String) -> String {
+    pub fn download_background(&self, query: String) -> Option<String> {
         let client = reqwest::Client::new();
         let authorization = construct_string(&["Client-ID ", &self.api_key]);
 
@@ -37,6 +37,9 @@ impl SplashClient {
         let v: serde_json::Value = serde_json::from_str(&res.text().unwrap()).unwrap();
         let img_choices = &v["results"].as_array().unwrap();
         let num_choices = img_choices.len();
+        if num_choices == 0 {
+            return None
+        }
         let mut rng = rand::thread_rng();
         let choice = rng.gen_range(0, num_choices-1);
         let matching_image = &v["results"][choice]["links"]["download"];
@@ -54,6 +57,6 @@ impl SplashClient {
         // end works
         println!("RES2: {:?}", res2);
         println!("Reading background image");
-        return "/tmp/dl.jpg".to_string();
+        return Some("/tmp/dl.jpg".to_string());
     }
 }
