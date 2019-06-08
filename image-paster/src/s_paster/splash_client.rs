@@ -1,5 +1,6 @@
 use reqwest::Response;
 use std::fs::File;
+use rand::Rng;
 
 pub fn construct_string(strs: &[&str]) -> String {
     let mut ret = String::new();
@@ -29,13 +30,16 @@ impl SplashClient {
         let img_query = construct_string(&["https://api.unsplash.com/search/photos?query=\"", query.as_str(), "\""]);
 
         let mut res = client
-            // .get("https://api.unsplash.com/search/photos?query=\"nebraska\"")
             .get(img_query.as_str())
             .header("Authorization", authorization.as_str()) // TODO: Needs api key
             .send().unwrap();
 
         let v: serde_json::Value = serde_json::from_str(&res.text().unwrap()).unwrap();
-        let matching_image = &v["results"][0]["links"]["download"];
+        let img_choices = &v["results"].as_array().unwrap();
+        let num_choices = img_choices.len();
+        let mut rng = rand::thread_rng();
+        let choice = rng.gen_range(0, num_choices-1);
+        let matching_image = &v["results"][choice]["links"]["download"];
         println!("Matching img: {:?}", matching_image);
 
         let mut res2: Response = client
