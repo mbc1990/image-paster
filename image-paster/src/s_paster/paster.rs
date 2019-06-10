@@ -15,14 +15,18 @@ use super::image_manager::ImageManager;
 use super::splash_client::SplashClient;
 
 pub struct Paster {
-    im: ImageManager,
+    ims: Vec<ImageManager>,
     sc: SplashClient
 }
 
 impl Paster {
-    pub fn new(splash_api_key: String, subject_path: String) -> Paster {
+    pub fn new(splash_api_key: String, subject_paths: Vec<String>) -> Paster {
+        let mut ims = Vec::new();
+        for path in subject_paths {
+            ims.push(ImageManager::new(path));
+        }
         return Paster {
-            im: ImageManager::new(subject_path),
+            ims: ims,
             sc: SplashClient::new(splash_api_key)
         };
     }
@@ -40,8 +44,8 @@ impl slack::EventHandler for Paster {
                         let text = msg.text.unwrap();
 
                         println!("text: {:?}", text);
-                        //if text.contains("<@UJLHVFB6J>") {  // Testing
-                        if text.contains("<@UK1VC3CV8>") {  // Zika
+                        if text.contains("<@UJLHVFB6J>") {  // Testing
+                        // if text.contains("<@UK1VC3CV8>") {  // Zika
                             println!("Mentioned");
                             let query_start = text.find(" ");
                             match query_start {
@@ -53,7 +57,9 @@ impl slack::EventHandler for Paster {
                                     let success = self.sc.download_background(query.to_string());
                                     match success {
                                         Some(_) => {
-                                            let public_url = self.im.combine("/tmp/dl.jpg".to_string());
+                                            // TODO: Should be randomly selected or from input param
+                                            let im = self.ims.first().unwrap();
+                                            let public_url = im.combine("/tmp/dl.jpg".to_string());
                                             let channel = msg.channel.unwrap();
                                             let _ = cli.sender().send_message(&channel, &public_url);
                                         },

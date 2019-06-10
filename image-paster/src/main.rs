@@ -13,6 +13,7 @@ extern crate s3;
 
 use s_paster::paster::Paster;
 
+use std::fs;
 use std::path::Path;
 use slack::RtmClient;
 use std::io::BufReader;
@@ -31,7 +32,17 @@ fn main() {
     let slack_api_key = args[1].clone();
     let splash_api_key = args[2].clone();
     let subject_path= args[3].clone();
-    let mut handler = Paster::new(splash_api_key, subject_path);
+    println!("Testing");
+    let paths = fs::read_dir(&subject_path).unwrap();
+    let mut subject_paths = Vec::new();
+    for path in paths {
+        let extracted_path = path.unwrap().path();
+        let path_str= extracted_path.to_str().unwrap();
+        subject_paths.push(path_str.to_string());
+    }
+
+
+    let mut handler = Paster::new(splash_api_key, subject_paths);
     let r = RtmClient::login_and_run(&slack_api_key, &mut handler);
     match r {
         Ok(_) => {}
