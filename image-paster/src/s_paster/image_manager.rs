@@ -41,37 +41,38 @@ impl ImageManager {
         let (width, height) = background.dimensions();
         println!("Background is {:?} x {:?}", width, height);
 
-        let width_start = width / 3 - self.subject_width/2;
-        let height_start = height / 2 - self.subject_height/2;
+        // Randomly shrink the subject
+        let shrink_factor = rand::thread_rng().gen_range(0.10, 0.65);
+        println!("Shrink factor: {:?}", &shrink_factor);
+        let resized_w = width as f64 * shrink_factor;
+        let resized_h = height as f64 * shrink_factor;
 
-        // TODO: Resize subject randomly within a range
-        let mut min_width = self.subject_width;
-        if width < self.subject_width {
-            min_width = width;
-        }
+        // Resize subject to fit on background
+        let resized = self.subject.resize(resized_w as u32, resized_h as u32, FilterType::Nearest);
+        let r_width = resized.width();
+        let r_height = resized.height();
 
-        let mut min_height = self.subject_height;
-        if height < self.subject_height {
-            min_height = height;
-        }
+        // Random positioning
+        let max_x = width - r_width;
+        let max_y = height - r_height;
+        let start_x = rand::thread_rng().gen_range(0, max_x);
+        let start_y = rand::thread_rng().gen_range(0, max_y);
+        println!("Random pos: {:?}, {:?}", start_x, start_y);
 
-        println!("min dims is {:?} x {:?}", min_width, min_height);
-        println!("Width start {:?}", width_start);
-
-        // Copy minimum matching rectangle of subject into background
-        for i in 0..min_width {
-            for k in 0..min_height {
-                let j_pixel = self.subject.get_pixel(i, k);
-
+        let mut subject_x = 0;
+        for i in start_x..start_x + r_width - 1 {
+            let mut subject_y = 0;
+            for k in start_y..start_y + r_height - 1 {
+                let j_pixel = resized.get_pixel(subject_x, subject_y);
+                subject_y = subject_y + 1;
                 // TODO: Hack around not being able to save alpha channel data
                 // TODO: For now, don't copy pixels that are supposed to be transparent
                 if j_pixel.data[3] == 0 {
                     continue;
                 }
-                // println!("{:?}", j_pixel);
-
-                background.put_pixel(i + width_start, k + height_start, j_pixel);
+                background.put_pixel(i, k, j_pixel);
             }
+            subject_x = subject_x + 1;
         }
 
         // Resize to reasonable dimensions
