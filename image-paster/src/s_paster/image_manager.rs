@@ -42,7 +42,7 @@ impl ImageManager {
         println!("Background is {:?} x {:?}", width, height);
 
         // Randomly shrink the subject
-        let shrink_factor = rand::thread_rng().gen_range(0.0, 1.0);
+        let shrink_factor = rand::thread_rng().gen_range(0.10, 0.65);
         println!("Shrink factor: {:?}", &shrink_factor);
         let resized_w = width as f64 * shrink_factor;
         let resized_h = height as f64 * shrink_factor;
@@ -52,36 +52,27 @@ impl ImageManager {
         let r_width = resized.width();
         let r_height = resized.height();
 
-        let width_start = width / 3 - r_width/2;
-        let height_start = height / 2 - r_height/2;
+        // Random positioning
+        let max_x = width - r_width;
+        let max_y = height - r_height;
+        let start_x = rand::thread_rng().gen_range(0, max_x);
+        let start_y = rand::thread_rng().gen_range(0, max_y);
+        println!("Random pos: {:?}, {:?}", start_x, start_y);
 
-        let mut min_width = r_width;
-        if width < r_width {
-            min_width = width;
-        }
-
-        let mut min_height = r_height;
-        if height < r_height {
-            min_height = height;
-        }
-
-        println!("min dims is {:?} x {:?}", min_width, min_height);
-        println!("Width start {:?}", width_start);
-
-        // Copy minimum matching rectangle of subject into background
-        for i in 0..min_width {
-            for k in 0..min_height {
-                let j_pixel = resized.get_pixel(i, k);
-
+        let mut subject_x = 0;
+        for i in start_x..start_x + r_width - 1 {
+            let mut subject_y = 0;
+            for k in start_y..start_y + r_height - 1 {
+                let j_pixel = resized.get_pixel(subject_x, subject_y);
+                subject_y = subject_y + 1;
                 // TODO: Hack around not being able to save alpha channel data
                 // TODO: For now, don't copy pixels that are supposed to be transparent
                 if j_pixel.data[3] == 0 {
                     continue;
                 }
-                // println!("{:?}", j_pixel);
-
-                background.put_pixel(i + width_start, k + height_start, j_pixel);
+                background.put_pixel(i, k, j_pixel);
             }
+            subject_x = subject_x + 1;
         }
 
         // Resize to reasonable dimensions
