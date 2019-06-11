@@ -41,17 +41,27 @@ impl ImageManager {
         let (width, height) = background.dimensions();
         println!("Background is {:?} x {:?}", width, height);
 
-        let width_start = width / 3 - self.subject_width/2;
-        let height_start = height / 2 - self.subject_height/2;
+        // Randomly shrink the subject
+        let shrink_factor = rand::thread_rng().gen_range(0.0, 1.0);
+        println!("Shrink factor: {:?}", &shrink_factor);
+        let resized_w = width as f64 * shrink_factor;
+        let resized_h = height as f64 * shrink_factor;
 
-        // TODO: Resize subject randomly within a range
-        let mut min_width = self.subject_width;
-        if width < self.subject_width {
+        // Resize subject to fit on background
+        let resized = self.subject.resize(resized_w as u32, resized_h as u32, FilterType::Nearest);
+        let r_width = resized.width();
+        let r_height = resized.height();
+
+        let width_start = width / 3 - r_width/2;
+        let height_start = height / 2 - r_height/2;
+
+        let mut min_width = r_width;
+        if width < r_width {
             min_width = width;
         }
 
-        let mut min_height = self.subject_height;
-        if height < self.subject_height {
+        let mut min_height = r_height;
+        if height < r_height {
             min_height = height;
         }
 
@@ -61,7 +71,7 @@ impl ImageManager {
         // Copy minimum matching rectangle of subject into background
         for i in 0..min_width {
             for k in 0..min_height {
-                let j_pixel = self.subject.get_pixel(i, k);
+                let j_pixel = resized.get_pixel(i, k);
 
                 // TODO: Hack around not being able to save alpha channel data
                 // TODO: For now, don't copy pixels that are supposed to be transparent
