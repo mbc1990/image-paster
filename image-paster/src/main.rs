@@ -41,7 +41,6 @@ fn main() {
         subject_paths.push(path_str.to_string());
     }
 
-
     let mut handler = Paster::new(splash_api_key, subject_paths);
     let r = RtmClient::login_and_run(&slack_api_key, &mut handler);
     match r {

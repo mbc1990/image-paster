@@ -9,6 +9,7 @@ use std::fs;
 use std::io::BufReader;
 use std::time::{SystemTime, UNIX_EPOCH};
 use rand::prelude::SliceRandom;
+use rand::Rng;
 
 
 use super::image_manager::ImageManager;
@@ -57,8 +58,12 @@ impl slack::EventHandler for Paster {
                                     let success = self.sc.download_background(query.to_string());
                                     match success {
                                         Some(_) => {
-                                            // TODO: Should be randomly selected or from input param
-                                            let im = self.ims.first().unwrap();
+                                            let mut rng = rand::thread_rng();
+                                            println!("{:?} images loaded", self.ims.len());
+                                            let subject_idx = rng.gen_range(0, self.ims.len());
+                                            println!("Subject index: {:?}", subject_idx);
+
+                                            let im = self.ims.get(subject_idx as usize).unwrap();
                                             let public_url = im.combine("/tmp/dl.jpg".to_string());
                                             let channel = msg.channel.unwrap();
                                             let _ = cli.sender().send_message(&channel, &public_url);
