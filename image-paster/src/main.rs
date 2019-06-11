@@ -32,6 +32,7 @@ fn main() {
     let slack_api_key = args[1].clone();
     let splash_api_key = args[2].clone();
     let subject_path= args[3].clone();
+    let bot_id = args[4].clone();
     println!("Testing");
     let paths = fs::read_dir(&subject_path).unwrap();
     let mut subject_paths = Vec::new();
@@ -41,7 +42,7 @@ fn main() {
         subject_paths.push(path_str.to_string());
     }
 
-    let mut handler = Paster::new(splash_api_key, subject_paths);
+    let mut handler = Paster::new(splash_api_key, subject_paths, bot_id);
     let r = RtmClient::login_and_run(&slack_api_key, &mut handler);
     match r {
         Ok(_) => {}

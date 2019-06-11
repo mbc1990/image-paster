@@ -17,18 +17,20 @@ use super::splash_client::SplashClient;
 
 pub struct Paster {
     ims: Vec<ImageManager>,
-    sc: SplashClient
+    sc: SplashClient,
+    bot_id: String
 }
 
 impl Paster {
-    pub fn new(splash_api_key: String, subject_paths: Vec<String>) -> Paster {
+    pub fn new(splash_api_key: String, subject_paths: Vec<String>, bot_id: String) -> Paster {
         let mut ims = Vec::new();
         for path in subject_paths {
             ims.push(ImageManager::new(path));
         }
         return Paster {
             ims: ims,
-            sc: SplashClient::new(splash_api_key)
+            sc: SplashClient::new(splash_api_key),
+            bot_id: bot_id
         };
     }
 }
@@ -45,7 +47,9 @@ impl slack::EventHandler for Paster {
                         let text = msg.text.unwrap();
 
                         println!("text: {:?}", text);
-                        if text.contains("<@UJLHVFB6J>") {  // Testing
+                        // TODO: Should be cli param
+                        if text.contains(&self.bot_id) {
+                        // if text.contains("<@UJLHVFB6J>") {  // Testing
                         // if text.contains("<@UK1VC3CV8>") {  // Zika
                             println!("Mentioned");
                             let query_start = text.find(" ");
