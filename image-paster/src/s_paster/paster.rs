@@ -47,10 +47,8 @@ impl slack::EventHandler for Paster {
                         let text = msg.text.unwrap();
 
                         println!("text: {:?}", text);
-                        // TODO: Should be cli param
+                        println!("Bot id: {:?}", &self.bot_id);
                         if text.contains(&self.bot_id) {
-                        // if text.contains("<@UJLHVFB6J>") {  // Testing
-                        // if text.contains("<@UK1VC3CV8>") {  // Zika
                             println!("Mentioned");
                             let query_start = text.find(" ");
                             match query_start {
