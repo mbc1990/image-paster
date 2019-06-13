@@ -48,7 +48,8 @@ impl ImageManager {
         let resized_h = height as f64 * shrink_factor;
 
         // Resize subject to fit on background
-        let resized = self.subject.resize(resized_w as u32, resized_h as u32, FilterType::Nearest);
+        let resized = self.subject.resize(resized_w as u32, resized_h as u32, FilterType::Lanczos3
+        );
         let r_width = resized.width();
         let r_height = resized.height();
 
@@ -76,7 +77,7 @@ impl ImageManager {
         }
 
         // Resize to reasonable dimensions
-        let resized = background.resize(800, 600, FilterType::Nearest);
+        let resized = background.resize(800, 600, FilterType::Lanczos3);
 
         resized.save("/tmp/output.png");
 
