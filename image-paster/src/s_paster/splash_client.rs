@@ -1,6 +1,8 @@
 use reqwest::Response;
 use std::fs::File;
 use rand::Rng;
+use image::{DynamicImage, ImageFormat};
+use std::io::Read;
 
 pub fn construct_string(strs: &[&str]) -> String {
     let mut ret = String::new();
@@ -22,8 +24,7 @@ impl SplashClient {
        }
     }
 
-    // TODO: Should return a result type
-    pub fn download_background(&self, query: String) -> Option<String> {
+    pub fn download_background(&self, query: String) -> Option<DynamicImage> {
         let client = reqwest::Client::new();
         let authorization = construct_string(&["Client-ID ", &self.api_key]);
 
@@ -45,18 +46,16 @@ impl SplashClient {
         let matching_image = &v["results"][choice]["links"]["download"];
         println!("Matching img: {:?}", matching_image);
 
+
+        // Download and return an image
         let mut res2: Response = client
             .get(matching_image.as_str().unwrap())
-            .header("Authorization", authorization.as_str()) // TODO: Needs api key
+            .header("Authorization", authorization.as_str())
             .send().unwrap();
 
-        // Write downloaded image to file
-        // TODO: Should generate a unique name so we can store backgrounds
-        let mut f = File::create("/tmp/dl.jpg").expect("Unable to create file");
-        res2.copy_to(&mut f).unwrap();
-        // end works
-        println!("RES2: {:?}", res2);
-        println!("Reading background image");
-        return Some("/tmp/dl.jpg".to_string());
+        let mut img_bytes = Vec::new();
+        res2.copy_to(&mut img_bytes).unwrap();
+        let mut background = image::load_from_memory(img_bytes.as_ref()).unwrap();
+        return Some(background);
     }
 }

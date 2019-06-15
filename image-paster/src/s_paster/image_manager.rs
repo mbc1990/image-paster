@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io::{BufReader, Read};
-use image::{GenericImage, ImageBuffer, RgbImage, GenericImageView};
+use image::{GenericImage, ImageBuffer, RgbImage, GenericImageView, DynamicImage};
 use image::{
     ImageFormat,
     imageops::*
@@ -34,10 +34,7 @@ impl ImageManager {
     }
 
     // TODO: This should return an enum that's a sum of all possible image error types, implementing From for each possible error
-    pub fn combine(&self, background_img_path: String) -> String {
-        let f2 = File::open("/tmp/dl.jpg").expect("Couldn't load tmp image");
-        let mut reader2 = BufReader::new(f2);
-        let mut background = image::load(reader2, ImageFormat::JPEG).unwrap();
+    pub fn combine(&self, background: &mut DynamicImage) -> String {
         let (width, height) = background.dimensions();
         println!("Background is {:?} x {:?}", width, height);
 
@@ -48,12 +45,14 @@ impl ImageManager {
         let resized_h = height as f64 * shrink_factor;
 
         // Resize subject to fit on background
-        let resized = self.subject.resize(resized_w as u32, resized_h as u32, FilterType::Lanczos3
-        );
+        let resized = self.subject.resize(resized_w as u32, resized_h as u32, FilterType::Lanczos3);
+
+        // TODO: Do some kind of color/contrast/saturation matching so the subject fits in better
+
+        // TODO: Instead of random positioning, do some edge detection and place the subject somewhere that has a horizontal edge to support them
+        // Random positioning
         let r_width = resized.width();
         let r_height = resized.height();
-
-        // Random positioning
         let max_x = width - r_width;
         let max_y = height - r_height;
         let start_x = rand::thread_rng().gen_range(0, max_x);
@@ -97,6 +96,7 @@ impl ImageManager {
 
         s3_name.push_str(".png");
 
+        // TODO: Error handling
         let (res, code) = bucket.put_object(&s3_name, &data, "multipart/form-data").unwrap();
         println!("Code: {:?}", code);
         println!("res: {:?}", res);

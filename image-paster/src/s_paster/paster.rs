@@ -49,14 +49,14 @@ impl Paster {
                 // Do the bot thing
                 let success = self.sc.download_background(query.to_string());
                 match success {
-                    Some(_) => {
+                    Some(mut img) => {
                         let mut rng = rand::thread_rng();
                         println!("{:?} images loaded", self.ims.len());
                         let subject_idx = rng.gen_range(0, self.ims.len());
                         println!("Subject index: {:?}", subject_idx);
 
                         let im = self.ims.get(subject_idx as usize).unwrap();
-                        let public_url = im.combine("/tmp/dl.jpg".to_string());
+                        let public_url = im.combine(&mut img);
                         let _ = cli.sender().send_message(&channel, &public_url);
                     },
                     _ => {
