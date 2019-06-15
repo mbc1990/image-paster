@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufReader, Read};
+use std::io::{BufReader, Read, Write};
 use image::{GenericImage, ImageBuffer, RgbImage, GenericImageView, DynamicImage};
 use image::{
     ImageFormat,
@@ -78,15 +78,9 @@ impl ImageManager {
         // Resize to reasonable dimensions
         let resized = background.resize(800, 600, FilterType::Lanczos3);
 
-        resized.save("/tmp/output.png");
-
         let credentials = Credentials::default();
         let region = s3::region::Region::UsEast1;
         let bucket = Bucket::new("image-paster", region, credentials).unwrap();
-        let mut to_upload = File::open("/tmp/output.png").unwrap();
-
-        let mut data = Vec::new();
-        to_upload.read_to_end(&mut data).expect("Unable to read data");
 
         let mut rng = thread_rng();
         let mut s3_name: String = iter::repeat(())
@@ -97,7 +91,17 @@ impl ImageManager {
         s3_name.push_str(".png");
 
         // TODO: Error handling
-        let (res, code) = bucket.put_object(&s3_name, &data, "multipart/form-data").unwrap();
+        let mut encoded_image = Vec::new();
+        let (width, height) = resized.dimensions();
+        image::png::PNGEncoder::new(encoded_image.by_ref())
+            .encode(
+                &resized.raw_pixels(),
+                width,
+                height,
+                resized.color()
+            ).expect("error encoding pixels as PNG");
+
+        let (res, code) = bucket.put_object(&s3_name, &encoded_image, "multipart/form-data").unwrap();
         println!("Code: {:?}", code);
         println!("res: {:?}", res);
 
