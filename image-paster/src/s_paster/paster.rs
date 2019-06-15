@@ -14,11 +14,16 @@ use rand::Rng;
 
 use super::image_manager::ImageManager;
 use super::splash_client::SplashClient;
+use std::error::Error;
 
 pub struct Paster {
     ims: Vec<ImageManager>,
     sc: SplashClient,
     bot_id: String
+}
+
+pub enum PasterError {
+    CouldNotFindImage
 }
 
 impl Paster {
@@ -33,6 +38,36 @@ impl Paster {
             bot_id: bot_id
         };
     }
+
+    fn handle_mention(&self, text: String, channel: String, cli: &RtmClient) -> Result<(), PasterError> {
+        let query_start = text.find(" ");
+        match query_start {
+            Some(q_string) => {
+                let query = &text[q_string+1..text.len()];
+                println!("Query: {:?}", &query);
+
+                // Do the bot thing
+                let success = self.sc.download_background(query.to_string());
+                match success {
+                    Some(_) => {
+                        let mut rng = rand::thread_rng();
+                        println!("{:?} images loaded", self.ims.len());
+                        let subject_idx = rng.gen_range(0, self.ims.len());
+                        println!("Subject index: {:?}", subject_idx);
+
+                        let im = self.ims.get(subject_idx as usize).unwrap();
+                        let public_url = im.combine("/tmp/dl.jpg".to_string());
+                        let _ = cli.sender().send_message(&channel, &public_url);
+                    },
+                    _ => {
+                        let _ = cli.sender().send_message(&channel, "Could not find image");
+                    }
+                }
+            },
+            _ =>{}
+        }
+        Ok(())
+    }
 }
 
 
@@ -45,39 +80,12 @@ impl slack::EventHandler for Paster {
                     Message::Standard(msg) => {
                         println!("msg: {:?}", msg);
                         let text = msg.text.unwrap();
-
                         println!("text: {:?}", text);
                         println!("Bot id: {:?}", &self.bot_id);
                         if text.contains(&self.bot_id) {
                             println!("Mentioned");
-                            let query_start = text.find(" ");
-                            match query_start {
-                                Some(q_string) => {
-                                    let query = &text[q_string+1..text.len()];
-                                    println!("Query: {:?}", &query);
-
-                                    // Do the bot thing
-                                    let success = self.sc.download_background(query.to_string());
-                                    match success {
-                                        Some(_) => {
-                                            let mut rng = rand::thread_rng();
-                                            println!("{:?} images loaded", self.ims.len());
-                                            let subject_idx = rng.gen_range(0, self.ims.len());
-                                            println!("Subject index: {:?}", subject_idx);
-
-                                            let im = self.ims.get(subject_idx as usize).unwrap();
-                                            let public_url = im.combine("/tmp/dl.jpg".to_string());
-                                            let channel = msg.channel.unwrap();
-                                            let _ = cli.sender().send_message(&channel, &public_url);
-                                        },
-                                        _ => {
-                                            let channel = msg.channel.unwrap();
-                                            let _ = cli.sender().send_message(&channel, "Could not find image");
-                                        }
-                                    }
-                                },
-                                _ =>{}
-                            }
+                            let channel = msg.channel.unwrap();
+                            self.handle_mention(text, channel, cli);
                         }
                     },
                     _ => {}
