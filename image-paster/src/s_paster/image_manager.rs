@@ -1,3 +1,4 @@
+use crate::image::Pixel;
 use std::fs::File;
 use std::io::{BufReader, Read, Write};
 use image::{GenericImage, ImageBuffer, RgbImage, GenericImageView, DynamicImage};
@@ -11,10 +12,13 @@ use rand::{Rng, thread_rng};
 use rand::distributions::Alphanumeric;
 use core::iter;
 
+const HELLIFY_PROBABILITY: f32 = 1.0;
+
 pub struct ImageManager {
     subject_width: u32,
     subject_height: u32,
-    subject: image::DynamicImage
+    subject: image::DynamicImage,
+    hell_background: image::DynamicImage
 }
 
 impl ImageManager {
@@ -26,10 +30,13 @@ impl ImageManager {
         let subject = image::load(reader, ImageFormat::PNG).unwrap();
         let (j_width, j_height) = subject.dimensions();
         println!("Subject is {:?} x {:?}", j_width, j_height);
+
+        let hell_background= image::open("/home/malcolm/projects/image-paster/Fire.jpg".to_string()).unwrap();
         return ImageManager {
             subject_width: j_width,
             subject_height: j_height,
-            subject: subject
+            subject: subject,
+            hell_background
         };
     }
 
@@ -45,9 +52,69 @@ impl ImageManager {
         let resized_h = height as f64 * shrink_factor;
 
         // Resize subject to fit on background
-        let resized = self.subject.resize(resized_w as u32, resized_h as u32, FilterType::Lanczos3);
+        let mut resized = self.subject.resize(resized_w as u32, resized_h as u32, FilterType::Lanczos3);
+        let (subject_resized_w, subject_resized_h) = resized.dimensions();
 
-        // TODO: Do some kind of color/contrast/saturation matching so the subject fits in better
+        // Small chance of applying hellify effect to the subject
+        let should_hellify = rand::thread_rng().gen_range(0.0, 1.0);
+        if should_hellify < HELLIFY_PROBABILITY {
+            let (f_w, f_h) = self.hell_background.dimensions();
+            println!("fire is {:?}x{:?}", f_w, f_h);
+
+            // Rearrange image
+            let sq_size = subject_resized_w as u32 / 4;
+
+            let num_swaps = rand::thread_rng().gen_range(10, 20);
+            for i in 0..num_swaps {
+                let from_x = rand::thread_rng().gen_range(0, subject_resized_w as u32 - sq_size - 1);
+                let from_y = rand::thread_rng().gen_range(0, subject_resized_h as u32 - sq_size - 1);
+
+                let to_x = rand::thread_rng().gen_range(0, subject_resized_w as u32 - sq_size - 1);
+                let to_y = rand::thread_rng().gen_range(0, subject_resized_h as u32 - sq_size - 1);
+                let should_invert = rand::thread_rng().gen_range(0, 10);
+                for x in 0..sq_size {
+                    for y in 0..sq_size {
+                        let mut tmp_px = resized.get_pixel(from_x + x, from_y + y);
+                        let mut swap = resized.get_pixel(to_x + x, to_y + y);
+
+                        if should_invert < 2 {
+                            tmp_px.invert();
+                            swap.invert();
+                        }
+
+                        resized.put_pixel(from_x + x, from_y + y, swap);
+                        resized.put_pixel(to_x + x, to_y + y, tmp_px);
+                    }
+                }
+            }
+
+            // Blend with fire
+            for x in 0..subject_resized_w as u32 {
+                for y in 0..subject_resized_h as u32 {
+                    let fire_px = self.hell_background.get_pixel(x, y);
+                    let mut img_px = resized.get_pixel(x, y);
+
+                    let i_r= img_px.data[0] as u32;
+                    let i_g= img_px.data[1] as u32;
+                    let i_b= img_px.data[2] as u32;
+
+                    let f_r = fire_px.data[0] as u32;
+                    let f_g = fire_px.data[1] as u32;
+                    let f_b = fire_px.data[2] as u32;
+
+                    let b_r = ((i_r + f_r) / 2) as u8;
+                    let b_g = ((i_g + f_g) / 2) as u8;
+                    let b_b = ((i_b + f_b) / 2) as u8;
+                    let mut blended_px = image::Rgba([b_r, b_g, b_b, img_px.data[3]]);
+                    println!("blended {:?}", blended_px);
+                    resized.put_pixel(x, y, blended_px);
+                }
+            }
+
+        }
+
+        // Randomly rotate the subject
+
 
         // TODO: Instead of random positioning, do some edge detection and place the subject somewhere that has a horizontal edge to support them
         // Random positioning
