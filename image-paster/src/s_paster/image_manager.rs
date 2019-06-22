@@ -10,6 +10,7 @@ use s3::bucket::Bucket;
 use rand::{Rng, thread_rng};
 use rand::distributions::Alphanumeric;
 use core::iter;
+use std::collections::HashMap;
 
 pub struct ImageManager {
     subject_width: u32,
@@ -48,6 +49,36 @@ impl ImageManager {
         let resized = self.subject.resize(resized_w as u32, resized_h as u32, FilterType::Lanczos3);
 
         // TODO: Do some kind of color/contrast/saturation matching so the subject fits in better
+        let kernel = [-1.0f32, -1.0, -1.0,
+            -1.0, 8.0, -1.0,
+            -1.0, -1.0, -1.0];
+        let filtered = background.filter3x3(&kernel);
+        filtered.save("/tmp/filtered_bg.png");
+
+        // TODO: x -> y -> count continuous light colored pixels
+        // TODO: But this only handles horizontal lines
+        /*
+        let mut y_runs = HashMap::new();
+
+        for i in 0..filtered.height() {
+            let mut x_run = HashMap::new();
+
+            let mut best_run_len = 0;
+            let mut cur_run_len = 0;
+            let mut best_x = 0;
+            let mut best_y = 0;
+
+            for k in 0..filtered.width() {
+                let pixel = filtered.get_pixel(i, k);
+                println!("Pixel: {:?}", pixel);
+                let pixel_data = pixel.data;
+                println!("Pixel data: {:?}", pixel_data);
+            }
+            y_runs.insert(i, x_run);
+        }
+        */
+
+        println!("Done with edge detection");
 
         // TODO: Instead of random positioning, do some edge detection and place the subject somewhere that has a horizontal edge to support them
         // Random positioning
