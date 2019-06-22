@@ -33,7 +33,6 @@ fn main() {
     let splash_api_key = args[2].clone();
     let subject_path= args[3].clone();
     let bot_id = args[4].clone();
-    println!("Testing");
     let paths = fs::read_dir(&subject_path).unwrap();
     let mut subject_paths = Vec::new();
     for path in paths {

@@ -23,7 +23,8 @@ pub struct Paster {
 }
 
 pub enum PasterError {
-    CouldNotFindImage
+    CouldNotFindImage,
+    NoQueryParsed
 }
 
 impl Paster {
@@ -44,29 +45,26 @@ impl Paster {
         match query_start {
             Some(q_string) => {
                 let query = &text[q_string+1..text.len()];
-                println!("Query: {:?}", &query);
-
-                // Do the bot thing
                 let success = self.sc.download_background(query.to_string());
                 match success {
                     Some(mut img) => {
                         let mut rng = rand::thread_rng();
-                        println!("{:?} images loaded", self.ims.len());
                         let subject_idx = rng.gen_range(0, self.ims.len());
-                        println!("Subject index: {:?}", subject_idx);
-
                         let im = self.ims.get(subject_idx as usize).unwrap();
                         let public_url = im.combine(&mut img);
                         let _ = cli.sender().send_message(&channel, &public_url);
+                        Ok(())
                     },
-                    _ => {
+                    None => {
                         let _ = cli.sender().send_message(&channel, "Could not find image");
+                        Err(PasterError::CouldNotFindImage)
                     }
                 }
             },
-            _ =>{}
+            None => {
+                Err(PasterError::NoQueryParsed)
+            }
         }
-        Ok(())
     }
 }
 
