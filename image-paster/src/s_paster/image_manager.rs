@@ -12,7 +12,7 @@ use rand::{Rng, thread_rng};
 use rand::distributions::Alphanumeric;
 use core::iter;
 
-const HELLIFY_PROBABILITY: f32 = 1.0;
+const HELLIFY_PROBABILITY: f32 = 0.25;
 
 pub struct ImageManager {
     subject_width: u32,
