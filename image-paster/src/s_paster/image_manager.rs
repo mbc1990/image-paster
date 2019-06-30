@@ -23,7 +23,7 @@ pub struct ImageManager {
 
 impl ImageManager {
 
-    pub fn new(fname: String) -> ImageManager {
+    pub fn new(fname: String, hell_bg_name: String) -> ImageManager {
         println!("Reading subject image");
         let f = File::open(fname).expect("Couldn't load subject image");
         let mut reader = BufReader::new(f);
@@ -31,7 +31,7 @@ impl ImageManager {
         let (j_width, j_height) = subject.dimensions();
         println!("Subject is {:?} x {:?}", j_width, j_height);
 
-        let hell_background= image::open("/home/malcolm/projects/image-paster/Fire.jpg".to_string()).unwrap();
+        let hell_background= image::open(hell_bg_name).unwrap();
         return ImageManager {
             subject_width: j_width,
             subject_height: j_height,
@@ -46,7 +46,7 @@ impl ImageManager {
         println!("Background is {:?} x {:?}", width, height);
 
         // Randomly shrink the subject
-        let shrink_factor = rand::thread_rng().gen_range(0.10, 0.65);
+        let shrink_factor = rand::thread_rng().gen_range(0.75, 0.85);
         println!("Shrink factor: {:?}", &shrink_factor);
         let resized_w = width as f64 * shrink_factor;
         let resized_h = height as f64 * shrink_factor;
@@ -91,7 +91,9 @@ impl ImageManager {
             // Blend with fire
             for x in 0..subject_resized_w as u32 {
                 for y in 0..subject_resized_h as u32 {
-                    let fire_px = self.hell_background.get_pixel(x, y);
+                    let hell_x = x % self.hell_background.width();
+                    let hell_y = y % self.hell_background.height();
+                    let fire_px = self.hell_background.get_pixel(hell_x, hell_y);
                     let mut img_px = resized.get_pixel(x, y);
 
                     let i_r= img_px.data[0] as u32;

@@ -28,10 +28,11 @@ pub enum PasterError {
 }
 
 impl Paster {
-    pub fn new(splash_api_key: String, subject_paths: Vec<String>, bot_id: String) -> Paster {
+    pub fn new(splash_api_key: String, subject_paths: Vec<String>, bot_id: String, hell_bg_path: String) -> Paster {
         let mut ims = Vec::new();
         for path in subject_paths {
-            ims.push(ImageManager::new(path));
+            // ims.push(ImageManager::new(path, "/home/malcolm/projects/image-paster/Fire.jpg".to_string()));
+            ims.push(ImageManager::new(path, hell_bg_path.clone()));
         }
         return Paster {
             ims: ims,
