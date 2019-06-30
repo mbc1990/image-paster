@@ -30,7 +30,7 @@ impl ImageManager {
         let subject = image::load(reader, ImageFormat::PNG).unwrap();
         let (j_width, j_height) = subject.dimensions();
         println!("Subject is {:?} x {:?}", j_width, j_height);
-
+        println!("hell bg path {:?} ",  hell_bg_name);
         let hell_background= image::open(hell_bg_name).unwrap();
         return ImageManager {
             subject_width: j_width,
